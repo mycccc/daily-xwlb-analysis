@@ -23,6 +23,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install --upgrade httpx  # 强制升级 httpx 到最新兼容版
       
       - name: 运行分析脚本
         env:
