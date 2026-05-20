@@ -4,7 +4,6 @@ from datetime import datetime
 from scraper import get_xwlb_content
 from analyzer import analyze_concepts_and_stocks, analyze_all_stocks
 from generator import generate_markdown, generate_html
-from datetime import datetime, timedelta
 
 def main():
     print("=" * 50)
@@ -13,15 +12,38 @@ def main():
 
     # 任务1：抓取新闻联播文字稿
     print("\n[任务1] 抓取新闻联播文字稿...")
-    yestoday = datetime.now()- timedelta(days=1)
-    date_str = yestoday.strftime("%Y%m%d")
-    # date_str = datetime.now().strftime("%Y%m%d")
+    date_str = datetime.now().strftime("%Y%m%d")
+
+    # 确保输出目录存在
+    os.makedirs("output", exist_ok=True)
+    os.makedirs("docs", exist_ok=True)
+
+    content = None
+    source = ""
     try:
         content, source = get_xwlb_content(date_str)
         print(f"✅ 成功获取文字稿，来源: {source}，字符数: {len(content)}")
     except Exception as e:
         print(f"❌ 抓取失败: {e}")
-        return
+        # 生成错误报告，保证 output/ 和 docs/ 有文件可提交
+        error_md = f"""# {date_str} 新闻联播分析报告（抓取失败）
+
+> 自动生成时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+> 状态：新闻源抓取失败
+
+**错误详情**：{e}
+
+请检查网络环境或数据源可用性，稍后重试。
+"""
+        md_path = f"output/{date_str}_xinwenlianbo.md"
+        with open(md_path, "w", encoding="utf-8") as f:
+            f.write(error_md)
+
+        html_path = "docs/index.html"
+        with open(html_path, "w", encoding="utf-8") as f:
+            f.write(f"<html><body><pre>{error_md}</pre></body></html>")
+        print("⚠️ 已生成错误报告，流程继续")
+        return   # 无内容时不执行后续分析，但文件已存在，Git 提交不会失败
 
     # 任务2：DeepSeek 分析（概念识别 + 个股挖掘）
     print("\n[任务2] DeepSeek 分析中...")
@@ -37,18 +59,14 @@ def main():
 
     # 任务4：生成 Markdown 和 HTML 文件
     print("\n[任务4] 生成输出文件...")
-    os.makedirs("output", exist_ok=True)
-    today = datetime.now().strftime("%Y%m%d")
-
     md_content = generate_markdown(content, analysis_result, stock_analyses)
-    md_path = f"output/{today}_xinwenlianbo.md"
+    md_path = f"output/{date_str}_xinwenlianbo.md"
     with open(md_path, "w", encoding="utf-8") as f:
         f.write(md_content)
     print(f"✅ Markdown 已保存: {md_path}")
 
     html_content = generate_html(md_content)
     html_path = "docs/index.html"
-    os.makedirs("docs", exist_ok=True)
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html_content)
     print(f"✅ HTML 已保存: {html_path}")

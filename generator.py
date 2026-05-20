@@ -46,8 +46,6 @@ def generate_markdown(content, analysis, stock_analyses):
 
 def generate_html(md_content):
     """将 Markdown 转为 HTML（使用简单的 HTML 模板）"""
-    # 这里简化处理，实际可使用 Python-Markdown 库
-    # pip install markdown
     try:
         import markdown
         html_body = markdown.markdown(md_content, extensions=['tables', 'fenced_code'])

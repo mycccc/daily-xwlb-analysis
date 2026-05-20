@@ -2,6 +2,7 @@ import json
 from openai import OpenAI
 from config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL
 
+# 客户端在模块级别初始化，避免每次调用重复创建
 client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL)
 
 def analyze_concepts_and_stocks(news_content):
@@ -31,10 +32,11 @@ def analyze_concepts_and_stocks(news_content):
         temperature=0.3
     )
     result_text = response.choices[0].message.content
-    # 提取 JSON 部分
-    json_start = result_text.find("{")
-    json_end = result_text.rfind("}") + 1
-    return json.loads(result_text[json_start:json_end])
+    # 提取 JSON 部分（可能被 markdown 代码块包裹）
+    json_match = re.search(r'\{.*\}', result_text, re.DOTALL)
+    if json_match:
+        return json.loads(json_match.group())
+    return json.loads(result_text)  # 如果直接是json
 
 def analyze_single_stock(stock_name, stock_code):
     """任务3：对单只个股进行完整分析"""
