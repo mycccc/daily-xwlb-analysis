@@ -12,7 +12,9 @@ def main():
 
     # 任务1：抓取新闻联播文字稿
     print("\n[任务1] 抓取新闻联播文字稿...")
-    date_str = datetime.now().strftime("%Y%m%d")
+    yestoday = datetime.now()- timedelta(days=1)
+    date_str = yestoday.strftime("%Y%m%d")
+    # date_str = datetime.now().strftime("%Y%m%d")
     try:
         content, source = get_xwlb_content(date_str)
         print(f"✅ 成功获取文字稿，来源: {source}，字符数: {len(content)}")
