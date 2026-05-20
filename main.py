@@ -4,6 +4,7 @@ from datetime import datetime
 from scraper import get_xwlb_content
 from analyzer import analyze_concepts_and_stocks, analyze_all_stocks
 from generator import generate_markdown, generate_html
+from datetime import datetime, timedelta
 
 def main():
     print("=" * 50)
